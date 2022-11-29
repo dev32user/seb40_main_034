@@ -81,6 +81,9 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         this.getSuccessHandler().onAuthenticationSuccess(request, response, authResult);
     }
 
+    /**
+     * 로그인 시에 응답
+     */
     private void sendResponse(
             String accessToken,
             String email,
