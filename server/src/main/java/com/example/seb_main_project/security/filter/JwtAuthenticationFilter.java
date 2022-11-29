@@ -100,6 +100,7 @@ public class JwtAuthenticationFilter extends UsernamePasswordAuthenticationFilte
         AuthDto.Response authResponse = AuthDto.Response.builder()
                 .accessToken(accessToken)
                 .nickname(findMember.getNickname())
+                .memberId(String.valueOf(findMember.getId()))
                 .email(email)
                 .build();
 
