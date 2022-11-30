@@ -1,9 +1,11 @@
 package com.example.seb_main_project.member.entity;
 
 import com.example.seb_main_project.audit.Auditable;
+import com.example.seb_main_project.postlike.entity.PostLike;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.*;
 import java.security.Principal;
@@ -39,5 +41,14 @@ public class Member extends Auditable implements Principal {
     @Override
     public String getName() {
         return getEmail();
+    }
+
+
+    @OneToMany(mappedBy = "member", fetch = FetchType.LAZY, cascade = CascadeType.REMOVE)
+    @ToString.Exclude
+    private List<PostLike> postLikes = new ArrayList<>();
+
+    public void setPostLikes(PostLike postLike) {
+        this.postLikes.add(postLike);
     }
 }
