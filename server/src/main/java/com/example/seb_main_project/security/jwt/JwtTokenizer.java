@@ -14,6 +14,7 @@ import io.jsonwebtoken.io.Encoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -24,6 +25,7 @@ import java.time.LocalDateTime;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Map;
+import java.util.Optional;
 
 import static com.example.seb_main_project.security.utils.JwtConstants.REFRESH_TOKEN;
 
@@ -34,6 +36,7 @@ import static com.example.seb_main_project.security.utils.JwtConstants.REFRESH_T
  */
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class JwtTokenizer {
 
     @Getter
@@ -49,7 +52,7 @@ public class JwtTokenizer {
     private int refreshTokenExpirationMinutes;
 
     private final MemberRepository memberRepository;
-    private RefreshTokenRepository refreshTokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
 
     /**
@@ -141,7 +144,7 @@ public class JwtTokenizer {
 
 
     /**
-     * JWT 만료 일시 지정 메서드, JWT 생성 시 사용된다.
+     * JWT 만료 일시 반환 메서드
      *
      * @param expirationMinutes 토큰 만료기간, 단위 : 분
      * @return 토큰 만료 일시
@@ -181,7 +184,9 @@ public class JwtTokenizer {
      */
     public String isExistRefresh(Cookie[] cookies) {
         for (Cookie cookie : cookies) {
-            if (cookie.getName().equals(REFRESH_TOKEN)) return cookie.getValue();
+            if (cookie.getName().equals(REFRESH_TOKEN)) {
+                log.info(String.valueOf(cookie));
+                return cookie.getValue();};
         }
         throw new BusinessLogicException(ExceptionCode.COOKIE_NOT_FOUND);
     }
@@ -199,7 +204,19 @@ public class JwtTokenizer {
             throw new BusinessLogicException(ExceptionCode.TOKEN_NOT_FOUND);
     }
 
-
+    public void saveRefreshToken(String refreshToken, String email, Integer memberId) {
+        Optional<RefreshToken> findRefreshToken = refreshTokenRepository.findByMemberId(memberId);
+        findRefreshToken.ifPresent(refreshTokenRepository::delete);
+        refreshTokenRepository.save(
+                RefreshToken.builder()
+                        .tokenValue(refreshToken)
+                        .tokenEmail(email)
+                        .memberId(memberId)
+                        .build());
+    }
+    /**
+     * 검증 후 Jws(Claims)를 반환해주는 메서드
+     */
     public Jws<Claims> getClaims(String jws, String base64EncodedSecretKey) {
         Key key = getKeyFromBase64EncodedKey(base64EncodedSecretKey);
 
