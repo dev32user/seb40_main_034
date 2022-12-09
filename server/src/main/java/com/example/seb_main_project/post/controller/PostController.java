@@ -2,18 +2,17 @@ package com.example.seb_main_project.post.controller;
 
 
 import com.example.seb_main_project.bookmark.service.BookmarkService;
-import com.example.seb_main_project.member.service.MemberService;
 import com.example.seb_main_project.post.dto.PostDto;
 import com.example.seb_main_project.post.entity.Post;
 import com.example.seb_main_project.post.mapper.PostMapper;
 import com.example.seb_main_project.post.service.PostService;
 import com.example.seb_main_project.response.MultiResponseDto;
-import com.example.seb_main_project.security.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Collections;
@@ -30,20 +29,17 @@ public class PostController {
     private final PostService postService;
     private final BookmarkService bookmarkService;
     private final PostMapper postMapper;
-    private final MemberService memberService;
-    private final RefreshTokenRepository refreshTokenRepository;
 
     @GetMapping("/main/list")
     public ResponseEntity getPosts(
             @RequestParam int page,
-            @RequestParam int size,
-            @RequestHeader(value = "Authorization", required = false) String authorization) {
+            @RequestParam int size) {
         Integer memberId;
         Page<Post> pagePosts = postService.findPosts(page - 1, size);
         List<Post> findPosts = pagePosts.getContent();
 
         try {
-            memberId = memberService.getTokenMember(authorization);
+            memberId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         } catch (Exception e) {
             return new ResponseEntity<>(
                     new MultiResponseDto<>(postMapper.postToPostResponseDto(findPosts), pagePosts),
@@ -75,9 +71,8 @@ public class PostController {
 
     @PostMapping("/main/submit")
     public ResponseEntity createPost(
-            @RequestHeader("Authorization") String authorization,
             @RequestBody PostDto.PostCreateDto postCreateDto) {
-        Integer memberId = memberService.getTokenMember(authorization);
+        Integer memberId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 
         Post createdPost = postService.createPost(postCreateDto, memberId);
 
@@ -87,11 +82,10 @@ public class PostController {
 
     @PutMapping("/main/{post-id}/edit")
     public ResponseEntity updatePost(
-            @RequestHeader("Authorization") String authorization,
             @PathVariable("post-id") Integer postId,
             @RequestBody PostDto.PostPatchDto postPatchDto) {
 
-        Integer memberId = memberService.getTokenMember(authorization);
+        Integer memberId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         postPatchDto.setPostId(postId);
         Post updatedPost = postService.updatePost(memberId, postMapper.postPatchDtoToPost(postPatchDto));
 
@@ -102,9 +96,8 @@ public class PostController {
 
     @DeleteMapping("/main/{post-id}/delete")
     public void deletePost(
-            @PathVariable(name = "post-id") Integer postId,
-            @RequestHeader("Authorization") String authorization) {
-        Integer memberId = memberService.getTokenMember(authorization);
+            @PathVariable(name = "post-id") Integer postId) {
+        Integer memberId = (Integer) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         postService.deletePost(postId, memberId);
     }
 }
