@@ -36,7 +36,7 @@ Post-On은 위치 기반 SNS로, 주변의 모든 즐길거리들을 한눈에 �
 
 **이동규** [GITHUB](https://github.com/dev32user) | Spring Security, ERD Design, Entity Class Mapping, AWS EC2 서버 배포, AWS RDS, 이미지 저장
 
-**조유종** [GITHUB](https://github.com/cracker321) | 게시글 및 댓글 CRUD
+**조유종** [GITHUB](https://github.com/cracker321) | 게시판 CRUD, 댓글 CRUD, 게시글 좋아요
 
 
 ---
